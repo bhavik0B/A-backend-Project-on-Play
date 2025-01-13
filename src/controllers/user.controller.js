@@ -3,16 +3,17 @@ import { ApiError } from "../utils/ApiError.js";
 import { User } from "../models/user.model.js";
 import {uploadOnCloudinary} from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
+import mongoose from "mongoose";
 
 const registerUser = asyncHandler( async (req, res) => {
     //get user details from frontend
-    const {fullName, email, uername, password} = req.body;
-    console.log("email", email);
-    console.log("password", password);
+    const {fullName, email, username, password} = req.body;
+    // console.log("email", email);
+    // console.log("password", password);
 
     //validation - non empty
     if(
-        [fullName, email, uername, password].some((field) => field?.trim() === "")
+        [fullName, email, username, password].some((field) => field?.trim() === "")
     ) {
         throw new ApiError(400, "All fields are required")
     }
@@ -23,9 +24,17 @@ const registerUser = asyncHandler( async (req, res) => {
         throw new ApiError(409, "Username or email already exists")
     }
 
+    console.log(req.files);
+
     // check for images, check for avatar
     const avatarLocalPath = req.files?.avatar[0]?.path;
-    const coverImageLocalpath = req.files?.coverImage[0]?.path;
+    // const coverImageLocalpath = req.files?.coverImage[0]?.path;
+
+    let coverImageLocalpath;
+    if (req.files && Array.isArray(req.files.coverImage) && req.files.coverImage.length > 0) {
+        coverImageLocalpath = req.files.coverImage[0].path
+    }
+
     if (!avatarLocalPath) {
         throw new ApiError(400, "Avatar File is required")
     }
@@ -40,7 +49,7 @@ const registerUser = asyncHandler( async (req, res) => {
     }
 
     // create user object - create entry in db
-    User.create({
+    const user = await User.create({
         fullName,
         avatar: avatar.url,
         coverImage: coverImage?.url || "",
@@ -61,11 +70,8 @@ const registerUser = asyncHandler( async (req, res) => {
 
     //return res
     return res.status(201).json(
-        new ApiREsponse(200, createdUser, "User registered Successfully")
+        new ApiResponse(200, createdUser, "User registered Successfully")
     )
-
-
-
  
 })
 

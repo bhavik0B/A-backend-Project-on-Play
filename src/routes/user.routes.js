@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { registerUser } from "../controllers/user.controller.js";
-import {upload } from "../middlewares/upload.controller.js";
+import {upload } from "../middlewares/multer.middleware.js";
 
 
 const router = Router()
@@ -16,6 +16,10 @@ router.route("/register").post(
             maxCount: 1
         }
     ]),
-    registerUser);
+    registerUser
+    )
+
+    // router.route("/avatar").patch(verifyJWT, upload.single("avatar"), updateUserAvatar)
+    // router.route("/cover-image").patch(verifyJWT, upload.single("coverImage"), updateUserCoverImage)
 
 export default router 
